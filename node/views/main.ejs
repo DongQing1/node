@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		body{
+			background: url(imgs/bg2.jpg) no-repeat;
+			background-size: 100% 100%;
+		}
+		a{
+			text-decoration: none;
+			color:#000;
+		}
+		.container{
+			width: 900px;
+			margin:0 auto;
+			position: relative;
+		}
+		.clear:after{
+			content: "";
+			display: block;
+			clear: both;
+		}
+		#header .container{
+			padding-top: 40px;		
+			/*background: url(imgs/bg5.jpg) no-repeat;*/
+			/*background-size: 100% 100%;	*/
+		}
+
+		#header h1{
+			float: left;
+			color: #e89062;
+			padding-top:20px;
+		}
+		#header .user{
+			width: 300px;
+			height: 100px;
+			float: right;
+		}
+		#header .user .head_pic{
+			width: 100px;
+			height: 100px;
+			float: left;
+			line-height: 100px;
+		}
+		#header .user .head_pic img{
+			width: 100%;
+			height: 100%;
+		}
+		#header .user .username{
+			width: 100px;
+			height: 100px;
+			float: left;
+			text-align: center;
+			line-height: 100px;
+			color: #d84452;
+			font-size: 20px;
+		}
+		#header .user .exit{
+			float: left;
+			width: 100px;
+			height: 100px;
+			line-height: 100px;			
+		}
+		#header .user .exit a{
+			font-size: 20px;
+			color: #d84452;
+		}
+		#body .container{
+			border: 3px solid #d84452;
+			position: relative;
+		}
+		#body .left{
+			width: 200px;
+			height: 600px;
+			float: left;
+			border-right:3px solid #d84452;
+			box-sizing:border-box;
+
+		}
+		#body .left .user_list li{
+			list-style: none;
+			font-size:24px;
+			color:#d84452;
+		}
+		#body .right{
+			float: right;
+			width: 700px;
+			height: 500px;
+			border-bottom:3px solid #d84452;
+			box-sizing:border-box;
+		}
+		#body .right .info_list li{
+			list-style: none;
+			height: 50px;
+			border: 1px solid #d84452;
+			line-height: 50px;
+			background: #f0cb7d;
+			border-radius:20px; 
+			margin: 5px;
+			font-size:24px;
+			color:#d84452;
+		}
+		#body .right .info_list .welcome{
+			text-align: center;
+			color: #36a094;
+		}
+		#body .right .info_list li img{
+			height: 50px;
+			float: left;
+		}
+		#body .right .info_list li span{
+			float: left;
+			height: 50px;
+			line-height: 50px;
+		}
+		#body .bottom{
+			position: absolute;
+			bottom: 0px;
+			right: 0px;
+			width: 700px;
+			box-sizing:border-box;
+			height: 100px;
+		}
+		#text{
+			width: 80%;
+			height: 100px;
+			box-sizing:border-box;
+			border: none;
+			outline: none;
+			font-size:24px;
+			border-bottom: 1px solid #d84452;
+			background: transparent;
+		}
+		#btn{
+			width: 19%;
+			height: 100px;
+			box-sizing:border-box;
+			border: none;
+			font-size:24px;
+			color:#d84452;
+			cursor: pointer;
+			font-weight: bold;
+			background:transparent;
+			border-left: 3px solid #d84452;
+		}
+		#box{
+			position: absolute;
+			left: 1070px;
+			top:79px;
+		}
+	</style>
+</head>
+<body>
+	<header id="header">
+		<div class="container clear">
+			<h1>欢迎使用socket.io聊天室</h1>
+			<div class="user clear">
+				<div class="head_pic">
+					<img src="<%=head_pic%>" alt="">
+				</div>
+				<div class="username">
+					<%=username%>
+				</div>
+				<div class="exit">
+					<a href="/exit">退出</a>
+				</div>
+			</div>
+		</div>
+	</header>
+	<session id="body">
+		<div class="container clear">
+			<div class="left">
+				<!-- 用户列表 -->
+				<ul class="user_list">
+					
+				</ul>
+			</div>
+			<div class="right">
+				<div class="top">
+					<!-- 聊天内容 -->
+					<ul class="info_list">
+						
+					</ul>
+				</div>
+				<div class="bottom">
+					<input type="text" id="text">
+					<button id="btn">发送</button>
+				</div>				
+			</div>			
+		</div>
+	</session>
+	<button id="box">离开</button>
+</body>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script>
+	var head_pic = "<%=head_pic%>";
+	var username = "<%=username%>";
+	var quanxian="<%=quanxian%>";
+</script>
+<script type="text/javascript">
+	//发送websocket请求
+	var socket=io();
+	//将自己的用户名数据发送给后台，后台来储存所有用户的信息
+	socket.emit("sendSelfInfo",{
+		username:"<%=username%>"
+	});
+	socket.on("connect",function(data){
+		//连接成功后通知所有人我来了
+		socket.emit("wolaile",{username:"<%=username%>"});
+		
+	})
+	var info_list = document.querySelector(".info_list");
+	//注册欢迎事件
+	socket.on("welcome",function(data){
+		info_list.innerHTML+='<li class="welcome">尊敬的'+data.username+'进入了聊天室</li>';
+	})
+	var box = document.getElementById("box");
+	box.onclick = function(){
+		socket.disconnect();
+		location.href="/login"
+	} 
+	//注册欢送事件
+	socket.on("someonego",function(data){
+		info_list.innerHTML+='<li class="welcome">尊敬的'+data.username+'离开了聊天室</li>';
+	})
+	var user_list=document.querySelector(".user_list");
+	//注册getUser事件,获取所有用户信息，并显示
+	socket.on("getUser",function(allUser){		
+		user_list.innerHTML="";
+		for(var i in allUser){
+			if(quanxian===4){
+				var str = "<li>"+allUser[i]+"<input type='checkbox' data-username="+allUser[i]+" /></li>"
+			}
+			user_list.innerHTML+="<li>"+allUser[i]+"</li>";
+		}
+	})
+	//委托模式添加事件
+	user_list.onclick=function(e){
+		if(e.target.tagName.toLowerCase()==="input"){
+			var beitiusername=e.target.getAttribute("data-username");
+			socket.emit("tiren",{username:beitiusername});
+		}
+	}
+	var input=document.querySelector("#text");
+	var btn=document.querySelector("#btn");
+	btn.onclick=function(){
+		//先检测是否有内容
+		if(!input.value){
+			return;
+		}
+		// 如果与内容，将内容发送
+		socket.emit("sendMessage",{
+			username:"<%=username%>",
+			head_pic:"<%=head_pic%>",
+			message:input.value
+		})
+		input.value="";
+	}	
+	//注册渲染消息事件
+	socket.on("renderMessage",function(data){
+		info_list.innerHTML+="<li><img src="+data.head_pic+"><span>"+data.username+"说:</span><span>"+data.message+"</li>";
+	})
+	socket.on("beiti",function(data){
+		if(username === data.username){
+			box.click();
+		}
+	})
+</script>
+</html>
